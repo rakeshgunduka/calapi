@@ -1,0 +1,9 @@
+# Build artifacts
+*.py[cod]
+build/
+dist/
+
+.DS_Store
+__pycache__/
+
+examples
