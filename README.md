@@ -1,2 +1,4 @@
-# Calapi Flask App
-Flask APP for demonstrating usage of calapi - Google Calendar API v3
+# Calapi
+Python Wrapper for Google Calendar API v3 to make life easier
+
+This project is Work In Progress.
