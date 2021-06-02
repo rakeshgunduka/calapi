@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block meta %}
+  <title>Auth</title>
+{% endblock %}
+
+{% block body %}
+  <h1>Google Calendar API Demo</h1>
+  <hr/>
+  <h2>Google Calendar API Get Consent (Connect or Disconnect Google Calendar)</h2>
+  {% if is_calendar_connected %}
+    <button id="disconnectGoogleCalendar">Disconnect Google Calendar</button>
+  {% else %}
+    <button id="connectGoogleCalendar">Get Users Consent</button>
+  {% endif %}
+  {% if is_calendar_connected %}
+    <hr/>
+    <section id="createEventSection">
+      <h2>Create Event on your calendar from current time to next 1 hour</h2>
+      <button id="createEvent">Click to create event</button>
+      <h3 id="eventCreated" style="display:none; color: green">Event created, check your google calendar</h3>
+    <hr/>
+    </section>
+    <section id="getEventSection" style="display:none">
+      <h2>Get above created event</h2>
+      <button id="getCreatedEvent">Click to Get Created Event</button>
+      <pre id="createdEventInfo"></pre>
+      <hr/>
+    </section>
+    <section id="deleteEventSection" style="display:none">
+      <h2>Delete above created event</h2>
+      <button id="deleteCreatedEvent">Click to Delete Created Event</button>
+    </section>
+  {% endif %}
+{% endblock %}
+
+{% block static %}
+  <script>
+    const baseUrl = '{{BASE_URL}}';
+  </script>
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}
