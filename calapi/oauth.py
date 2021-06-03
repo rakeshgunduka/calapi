@@ -1,10 +1,5 @@
 from google_auth_oauthlib import flow as oauthflow
 
-
-class ImproperlyConfigured(Exception):
-    pass
-
-
 class Oauth(object):
 
     def __init__(self, credentials_path, scopes):

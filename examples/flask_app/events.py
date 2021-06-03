@@ -1,9 +1,9 @@
 import json
 
-from flask import Blueprint, render_template, redirect
-from flask import request, g, jsonify, make_response, abort
+from flask import Blueprint
+from flask import request, jsonify
 
-from calapi import Events
+from calapi import Session
 
 mod = Blueprint('events', __name__)
 
@@ -15,9 +15,9 @@ def google_calendar_insert():
         return "Calendar Not Connected", 400
     user_google_auth_credentials = request.cookies.get('user_google_auth_credentials')
     session_credentials = json.loads(user_google_auth_credentials)
-    events = Events(session_credentials=session_credentials)
+    session = Session(session_credentials=session_credentials)
 
-    query = events.query.start(
+    query = session.events.query.start(
                 date_time='2021-06-03T09:00:00-07:00',
                 time_zone='America/Los_Angeles'
             ).end(
@@ -39,7 +39,8 @@ def google_calendar_insert():
                     {'method': 'popup', 'minutes': 10},
                 ],
             })
-    created_event = events.insert(query)
+    created_event = session.events.insert(query)
+    print(created_event)
     return jsonify(created_event)
 
 
@@ -50,10 +51,10 @@ def google_calendar_get_event():
         return "Calendar Not Connected", 400
     user_google_auth_credentials = request.cookies.get('user_google_auth_credentials')
     session_credentials = json.loads(user_google_auth_credentials)
-    events = Events(session_credentials=session_credentials)
+    session = Session(session_credentials=session_credentials)
 
     event_id = request.args.get('eventId')
-    event = events.get(event_id)
+    event = session.events.get(event_id)
     return jsonify(event)
 
 
@@ -64,8 +65,8 @@ def google_calendar_get_delete():
         return "Calendar Not Connected", 400
     user_google_auth_credentials = request.cookies.get('user_google_auth_credentials')
     session_credentials = json.loads(user_google_auth_credentials)
-    events = Events(session_credentials=session_credentials)
+    session = Session(session_credentials=session_credentials)
 
     event_id = request.args.get('eventId')
-    events.delete(event_id)
+    session.events.delete(event_id)
     return "Event Deleted", 200

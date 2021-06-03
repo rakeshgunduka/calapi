@@ -2,18 +2,25 @@ import json
 import settings
 
 from flask import Blueprint, render_template, redirect
-from flask import request, g, jsonify, make_response, abort
+from flask import request, make_response
 from calapi import Oauth
 
 client = Oauth(
     credentials_path=settings.OAUTH_CREDENTIALS_PATH,
-    scopes=settings.CALENDAR_API_SCOPES
+    scopes=settings.OAUTH_API_SCOPES
 )
 mod = Blueprint('auth', __name__)
 
 
 @mod.route('/')
-def auth():
+def home():
+    '''
+    On Homepage you should be able
+    - Connect or Disconnect your google account
+    - Create an event from current time to next 1 hour
+    - Retrieve above created event
+    - Delete above created event
+    '''
     is_calendar_connected = request.cookies.get('is_calendar_connected')
     return render_template('auth.html',
                     BASE_URL=settings.APP_BASE_URL,
@@ -50,7 +57,7 @@ def google_calendar_callback():
     code = request.args.get('code')
     client.on_auth_callback(state, code)
     user_google_auth_credentials = client.get_user_credentials()
-    # print('User Google Auth Creds', user_google_auth_credentials)
+    print('User Google Auth Creds', user_google_auth_credentials)
     resp = make_response(render_template('auth_success.html'))
     resp.set_cookie('is_calendar_connected', 'true')
     

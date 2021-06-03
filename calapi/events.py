@@ -1,128 +1,239 @@
-import re
 import google.oauth2.credentials
 
-from apiclient.discovery import build
+from .query import Query, _camelify
+from .exceptions import InvalidJsonError
+from .service import Service
 
 
-class BaseException(Exception):
-    def __str__(self):
-        return self.msg
-
-
-class InvalidJsonError(BaseException):
-    msg = 'Invalid json request'
-
-
-def _decamelify(obj):
-    def func(string): return re.sub(
-        '([a-z0-9])([A-Z])', r'\1_\2', string).lower()
-    return modify_object(obj, func)
-
-
-def _camelify(obj):
-    def func(string):
-        return re.sub(r'_(\w)', lambda match: match.group(1).upper(), string)
-    return modify_object(obj, func)
-
-
-def modify_object(obj, func):
-    if isinstance(obj, dict):
-        temp_obj = {}
-        for key in obj:
-            if isinstance(obj[key], str):
-                temp_obj[func(key)] = obj[key]
-            else:
-                temp_obj[func(key)] = modify_object(obj[key], func)
-        return temp_obj
-    if isinstance(obj, list):
-        temp_obj = []
-        for key in obj:
-            if isinstance(key, str):
-                temp_obj.append(key)
-            else:
-                temp_obj.append(modify_object(key, func))
-        return temp_obj
-    if isinstance(obj, bool):
-        return obj
-    if isinstance(obj, str) and not obj.isupper():
-        return func(obj)
-    return obj
-
-
-class Query(object):
-
-    def __init__(self):
-        self.query = {}
-
-    def __getattr__(self, name):
-        def f(*args, **kw):
-            if not getattr(self.query, name, None):
-                self.query.setdefault(name, None)
-            clean = kw.pop('clean', None)
-            if clean:
-                self.query[name] = None
-            if kw:
-                self.query[name] = kw
-            elif isinstance(args, list):
-                self.query[name] = args
-            elif len(args) == 1:
-                self.query[name] = args[0]
-            return self
-        return f
-
-    def json(self, camelify=False):
-        if camelify:
-            return _camelify(self.query)
-        return self.query
-
-    def clone(self, query):
-        self.query.update(query.json())
-        return self
-
-
-class Events():
+class Events(Service):
 
     def __init__(self, session_credentials):
-        self.session_credentials = session_credentials
-        self.service = None
-        if session_credentials:
-            credentials = google.oauth2.credentials.Credentials(
-                **session_credentials)
-            self.service = build(
-                'calendar',
-                'v3',
-                credentials=credentials
-            )
+        super().__init__(session_credentials)
 
-    def insert(self, query, calendar_id='primary'):
+    def delete(self, event_id, calendar_id='primary'):
+        '''Deletes an event using event id
+
+        Parameters:
+        event_id (string): Event ID
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Event Deleted response
+
+        Example usage (Refer: https://developers.google.com/calendar/v3/reference/events/delete):
+        event_id = 'v497l802ha00asds1p97frtdd0'
+        event = session.events.delete(event_id)
+        '''
+        return self.service.events().delete(
+                    calendarId=calendar_id,
+                    eventId=event_id
+                ).execute()
+
+    def get(self, event_id, calendar_id='primary'):
+        '''Gets an event using event id
+
+        Parameters:
+        event_id (string): Event ID
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Event response
+
+        Example usage (Refer: https://developers.google.com/calendar/v3/reference/events/get):
+        event_id = 'v497l802ha00asds1p97frtdd0'
+        event = session.events.get(event_id)
+        '''
+        return self.service.events().get(
+                    calendarId=calendar_id,
+                    eventId=event_id
+                ).execute()
+
+    def import_event(self, query, calendar_id='primary'):
+        '''Imports an event. This operation is used to add a private copy of
+        an existing event to a calendar
+
+        Parameters:
+        query (Query or dict): Event Body
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Import Event response
+
+        Example usage (Refer: https://developers.google.com/calendar/v3/reference/events/import):
+        query = session.events.query.summary(
+                'Appointment'
+            ).location(
+                'Somewhere'
+            )
+        resp = session.events.import_event(query)
+        '''
         if isinstance(query, Query):
             request_params = query.json(camelify=True)
         elif isinstance(query, dict):
             request_params = _camelify(query)
         else:
             raise InvalidJsonError()
-        return self.service.events().insert(
+        return self.service.events().import_(
             calendarId=calendar_id,
             body=request_params
         ).execute()
 
-    def get(self, event_id, calendar_id='primary'):
-        return self.service.events().get(
-            calendarId=calendar_id,
-            eventId=event_id
-        ).execute()
+    def insert(self, query, calendar_id='primary'):
+        '''Creates an event
 
-    def delete(self, event_id, calendar_id='primary'):
-        return self.service.events().delete(
-            calendarId=calendar_id,
-            eventId=event_id
-        ).execute()
-    
+        Parameters:
+        query (Query or dict): Event Body
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Event Created response
+
+        Example usage (Refer: https://developers.google.com/calendar/v3/reference/events/insert):
+        query = session.events.query.start(
+                date_time='2021-06-03T09:00:00-07:00',
+                time_zone='America/Los_Angeles'
+            ).end(
+                date_time='2021-06-03T09:30:00-07:00',
+                time_zone='America/Los_Angeles'
+            ).attendees([
+                {'email': 'lp_age@example.com'},
+                {'email': 'sbrin@example.com'},
+            ]).summary(
+                'Google I/O 2015'
+            ).description(
+                '800 Howard St., San Francisco, CA 94103'
+            )
+        event = session.events.insert(query)
+        '''
+        if isinstance(query, Query):
+            event = query.json(camelify=True)
+        elif isinstance(query, dict):
+            event = _camelify(query)
+        else:
+            raise InvalidJsonError()
+        return self.service.events().insert(
+                    calendarId=calendar_id,
+                    body=event
+                ).execute()
+
+    def instances(self, event_id, page_token=None, calendar_id='primary'):
+        '''List of instances paginated using event id
+
+        Parameters:
+        event_id (string): Event ID
+        page_token (string): Initially Token is kept None,
+                for further pages use nextPageToken from the response
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: List of Instances response
+
+        Example usage (Refer: https://developers.google.com/calendar/v3/reference/events/instances):
+        event_id = 'v497l802ha00asds1p97frtdd0'
+        instances_page_1 = session.events.instances(event_id)
+        page_token = instances_page_1.get('nextPageToken')
+        instances_page_2 = session.events.instances(
+                                    event_id, page_token=page_token)
+        '''
+        return self.service.events().instances(
+                    calendarId=calendar_id,
+                    eventId=event_id,
+                    pageToken=page_token
+                ).execute()
+
     def list(self, page_token=None, calendar_id='primary'):
+        '''List of events paginated
+
+        Parameters:
+        page_token (string): Initially Token is kept None,
+                for further pages use nextPageToken from the response
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: List of Events response
+
+        Example usage (Refer: https://developers.google.com/calendar/v3/reference/events/list):
+        events_page_1 = session.events.list()
+        page_token = events_page_1.get('nextPageToken')
+        events_page_2 = session.events.list(page_token=page_token)
+        '''
         return self.service.events().list(
-            calendarId=calendar_id,
-            pageToken=page_token
-        ).execute()
+                    calendarId=calendar_id,
+                    pageToken=page_token
+                ).execute()
+
+    def move(self, event_id, destination_calendar_id, calendar_id='primary'):
+        '''List of instances paginated using event id
+
+        Parameters:
+        event_id (string): Event ID
+        destination_calendar_id (string): Destination Calendar ID
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Evemts moved response
+
+        Example usage (Refer: https://developers.google.com/calendar/v3/reference/events/move):
+        event_id = 'v497l802ha00asds1p97frtdd0'
+        destination_calendar_id = 'some_calendar_id'
+        resp = session.events.move(
+                            event_id,
+                            destination_calendar_id
+                        )
+        '''
+        return self.service.events().move(
+                    calendarId=calendar_id,
+                    eventId=event_id,
+                    destinationCalendarId=destination_calendar_id
+                ).execute()
+
+    def patch(self):
+        '''Not Implemented'''
+        raise NotImplementedError("Patch API Wrapper Function Not Implemented")
+
+    def update(self, event_id, query, calendar_id='primary'):
+        '''Update event using event id
+
+        Parameters:
+        event_id (string): Event ID
+        query (Query or dict): Event Body
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Event updated response
+
+        Example usage (Refer: https://developers.google.com/calendar/v3/reference/events/update):
+        query = session.events.query.summary(
+                'Updated summary Google I/O 2015'
+            ).description(
+                'Updated description 800 Howard St., San Francisco, CA 94103'
+            )
+        resp = session.events.update(event_id, query)
+        '''
+        if isinstance(query, Query):
+            event = query.json(camelify=True)
+        elif isinstance(query, dict):
+            event = _camelify(query)
+        else:
+            raise InvalidJsonError()
+
+        updated_event = self.service.events().get(
+                    calendarId=calendar_id,
+                    eventId=event_id
+                ).execute()
+
+        for params in event:
+            updated_event[params] = event[params]
+
+        return self.service.events().update(
+                    calendarId=calendar_id,
+                    eventId=event_id,
+                    body=updated_event
+                ).execute()
+
+    def watch(self):
+        '''Not Implemented'''
+        raise NotImplementedError("Watch API Wrapper Function Not Implemented")
 
     def __getattr__(self, name):
         if name == 'query':
