@@ -9,9 +9,76 @@ class Calendars(Service):
         super().__init__(session_credentials)
 
     def clear(self, calendar_id):
+        '''Clears a primary calendar. This operation deletes all events
+        associated with the primary calendar of an account.
+
+        Parameters:
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Calendar Events Deleted response
+
+        Example usage (Refer:
+            https://developers.google.com/calendar/v3/reference/calendars/delete):
+        calendar_id = 'v497l802ha00asds1p97frtdd0'
+        resp = session.calendars.clear(calendar_id)
+        '''
         return self.service.calendars().clear(calendar_id).execute()
 
+    def delete(self, calendar_id):
+        '''Deletes a secondary calendar
+
+        Parameters:
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Calendar Deleted response
+
+        Example usage (Refer:
+            https://developers.google.com/calendar/v3/reference/calendars/delete):
+        calendar_id = 'v497l802ha00asds1p97frtdd0'
+        resp = session.calendars.delete(calendar_id)
+        '''
+        return self.service.calendars().delete(calendarId=calendar_id).execute()
+
+    def get(self, calendar_id):
+        '''Gets Calendar using calendar id
+
+        Parameters:
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Calendar response
+
+        Example usage (Refer:
+            https://developers.google.com/calendar/v3/reference/calendars/get):
+        calendar_id = 'v497l802ha00asds1p97frtdd0'
+        resp = session.calendars.get(calendar_id)
+        '''
+        return self.service.calendars().get(
+                    calendarId=calendar_id,
+                ).execute()
+
     def insert(self, query):
+        '''Creates a rule
+
+        Parameters:
+        query (Query or dict): Rule Body
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Rule Created response
+
+        Example usage (Refer:
+            https://developers.google.com/calendar/v3/reference/calendars/insert):
+        query = session.events.query.backgroundColor(
+                '#0088aa'
+            ).foregroundColor(
+                #0088ab'
+            )
+        calendar_id = 'v497l802ha00asds1p97frtdd0'
+        rule = session.calendars.insert(query, calendar_id)
+        '''
         if isinstance(query, Query):
             calendar = query.json(camelify=True)
         elif isinstance(query, dict):
@@ -22,21 +89,55 @@ class Calendars(Service):
                     body=calendar
                 ).execute()
 
-    def get(self, calendar_id):
-        return self.service.calendars().get(
-                    calendarId=calendar_id,
-                ).execute()
-
-    def delete(self, calendar_id):
-        return self.service.calendars().delete(calendarId=calendar_id).execute()
-
     def list(self, calendar_id, page_token=None):
+        '''Returns the calendars on the user's calendar list.
+
+        Parameters:
+        calendar_id (string): Calendar ID, default is set to primary
+        page_token (string): Initially Token is kept None,
+                for further pages use nextPageToken from the response
+
+        Returns:
+        dict: List of Rules response
+
+        Example usage (Refer:
+            https://developers.google.com/calendar/v3/reference/calendars/list):
+        calendar_list_page_1 = session.calendarlist.list(calendar_id=calendar_id)
+        page_token = calendar_list_page_1.get('nextPageToken')
+        calendar_list_page_2 = session.calendars.list(
+                                    calendar_id=calendar_id,
+                                    page_token=page_token)
+        '''
         return self.service.calendars().list(
                     calendarId=calendar_id,
                     pageToken=page_token
                 ).execute()
 
+    def patch(self):
+        '''Not Implemented'''
+        raise NotImplementedError("Patch API Wrapper Function Not Implemented")
+
     def update(self, query, calendar_id):
+        '''Update rule using rule id
+
+        Parameters:
+        rule_id (string): Rule ID
+        query (Query or dict): Rule Body
+        calendar_id (string): Calendar ID, default is set to primary
+
+        Returns:
+        dict: Rule updated response
+
+        Example usage (Refer:
+            https://developers.google.com/calendar/v3/reference/calendars/update):
+        query = session.events.query.scope(
+                        type=updatedScopeType,
+                        value=updatedScopeEmail,
+                    ).role(
+                        'updatedRole'
+                    )
+        resp = session.calendars.update(rule_id, query)
+        '''
         if isinstance(query, Query):
             calendar = query.json(camelify=True)
         elif isinstance(query, dict):
@@ -55,9 +156,6 @@ class Calendars(Service):
                     calendarId=calendar_id,
                     body=updated_calendar
                 ).execute()
-
-    def patch(self):
-        raise NotImplementedError("Patch API Wrapper Function Not Implemented")
 
     def __getattr__(self, name):
         if name == 'query':

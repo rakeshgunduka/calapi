@@ -9,6 +9,17 @@ from .colors import Colors
 class Session():
 
     def __init__(self, session_credentials):
+        '''Calapi Users Session Constructor
+
+        Parameters:
+        session_credentials (dict): Users credentials with access token
+
+        Returns:
+        User Session Instance
+
+        Example usage :
+        session = Session(session_credentials=session_credentials)
+        '''
         self.session_credentials = session_credentials
     
     def __getattr__(self, name):
