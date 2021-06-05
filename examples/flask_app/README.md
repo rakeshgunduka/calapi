@@ -2,12 +2,13 @@
 
 Flask APP for demonstrating usage of calapi - Google Calendar API v3
 
-# Install requirements
+
+## Install requirements
 
     pip install -r requirements.txt
 
 
-# Acquire Google Oauth credentials
+## Acquire Google Oauth credentials
 
 **1.  Create a new project on google console dashboard on below link**
 
@@ -36,11 +37,13 @@ https://console.cloud.google.com/apis/library/calendar-json.googleapis.com
 - Download the credentials (Eg. credentials.json)
 
 
-# Update `credentials.json` path in the settings.py file
+** Update `credentials.json` path in the settings.py file **
 
     OAUTH_CREDENTIALS_PATH = './credentials.json'
 
-# Run the app and open `http://localhost:8001`
+
+## Run the app
+**After service starts, open `http://localhost:8001` in your browser**
 
     python serve.py
 
