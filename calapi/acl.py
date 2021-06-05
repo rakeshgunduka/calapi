@@ -59,7 +59,7 @@ class Acl(Service):
 
         Example usage (Refer:
             https://developers.google.com/calendar/v3/reference/acl/insert):
-        query = session.events.query.scope(
+        query = session.acl.query.scope(
                 type=scopeType,
                 value=scopeEmail,
             ).role(
@@ -110,7 +110,7 @@ class Acl(Service):
 
         Example usage (Refer:
             https://developers.google.com/calendar/v3/reference/acl/update):
-        query = session.events.query.scope(
+        query = session.acl.query.scope(
                         type=updatedScopeType,
                         value=updatedScopeEmail,
                     ).role(

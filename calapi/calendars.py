@@ -26,7 +26,8 @@ class Calendars(Service):
         return self.service.calendars().clear(calendar_id).execute()
 
     def delete(self, calendar_id):
-        '''Deletes a secondary calendar
+        '''Deletes a secondary calendar.
+            Use calendars.clear for clearing all events on primary calendars.
 
         Parameters:
         calendar_id (string): Calendar ID, default is set to primary
@@ -42,7 +43,7 @@ class Calendars(Service):
         return self.service.calendars().delete(calendarId=calendar_id).execute()
 
     def get(self, calendar_id):
-        '''Gets Calendar using calendar id
+        '''Returns metadata for a calendar
 
         Parameters:
         calendar_id (string): Calendar ID, default is set to primary
@@ -60,24 +61,22 @@ class Calendars(Service):
                 ).execute()
 
     def insert(self, query):
-        '''Creates a rule
+        '''Creates a secondary calendar. 
 
         Parameters:
-        query (Query or dict): Rule Body
-        calendar_id (string): Calendar ID, default is set to primary
+        query (Query or dict): Calendar Body
 
         Returns:
-        dict: Rule Created response
+        dict: Secondary Calendar Created response
 
         Example usage (Refer:
             https://developers.google.com/calendar/v3/reference/calendars/insert):
-        query = session.events.query.backgroundColor(
-                '#0088aa'
-            ).foregroundColor(
-                #0088ab'
+        query = session.calendars.query.summary(
+                'calendarSummary'
+            ).time_zone(
+                'America/Los_Angeles'
             )
-        calendar_id = 'v497l802ha00asds1p97frtdd0'
-        rule = session.calendars.insert(query, calendar_id)
+        calendar = session.calendars.insert(query)
         '''
         if isinstance(query, Query):
             calendar = query.json(camelify=True)
@@ -118,25 +117,21 @@ class Calendars(Service):
         raise NotImplementedError("Patch API Wrapper Function Not Implemented")
 
     def update(self, query, calendar_id):
-        '''Update rule using rule id
+        '''Updates metadata for a calendar. 
 
         Parameters:
-        rule_id (string): Rule ID
-        query (Query or dict): Rule Body
+        query (Query or dict): Calendar Update Body
         calendar_id (string): Calendar ID, default is set to primary
 
         Returns:
-        dict: Rule updated response
+        dict: Calendar updated response
 
         Example usage (Refer:
             https://developers.google.com/calendar/v3/reference/calendars/update):
-        query = session.events.query.scope(
-                        type=updatedScopeType,
-                        value=updatedScopeEmail,
-                    ).role(
-                        'updatedRole'
+        query = session.calendars.query.summary(
+                        'New Summary'
                     )
-        resp = session.calendars.update(rule_id, query)
+        resp = session.calendars.update(query)
         '''
         if isinstance(query, Query):
             calendar = query.json(camelify=True)

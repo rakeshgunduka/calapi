@@ -57,7 +57,7 @@ class CalendarList(Service):
         query = session.calendarList.query.backgroundColor(
                 '#0088aa'
             ).foregroundColor(
-                #0088ab'
+                '#0088ab'
             )
         calendar_id = 'v497l802ha00asds1p97frtdd0'
         rule = session.calendarlist.insert(query, calendar_id)
