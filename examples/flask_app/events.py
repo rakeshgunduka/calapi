@@ -1,5 +1,6 @@
 import json
 
+from datetime import datetime, timedelta
 from flask import Blueprint
 from flask import request, jsonify
 
@@ -16,20 +17,22 @@ def google_calendar_insert():
     user_google_auth_credentials = request.cookies.get('user_google_auth_credentials')
     session_credentials = json.loads(user_google_auth_credentials)
     session = Session(session_credentials=session_credentials)
+    now = datetime.now()
+    after_1_hour = now + timedelta(hours=1)
 
     query = session.events.query.start(
-                date_time='2021-06-03T09:00:00-07:00',
-                time_zone='America/Los_Angeles'
+                date_time=now.isoformat(),
+                time_zone='Asia/Kolkata'
             ).end(
-                date_time='2021-06-03T09:30:00-07:00',
-                time_zone='America/Los_Angeles'
+                date_time=after_1_hour.isoformat(),
+                time_zone='Asia/Kolkata'
             ).attendees([
                 {'email': 'lp_age@example.com'},
                 {'email': 'sbrin@example.com'},
             ]).summary(
-                'Google I/O 2015'
+                'Calapi Flask App Testing'
             ).description(
-                '800 Howard St., San Francisco, CA 94103'
+                "A light weight python wrapper for Google's Calendar API v3"
             ).recurrence([
                 'RRULE:FREQ=DAILY;COUNT=2'
             ]).reminders({

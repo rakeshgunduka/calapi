@@ -7,6 +7,7 @@ setup(
     version=__version__,
     description="A light weight python wrapper for Google's Calendar API v3 written upon Google API Python Client.",
     long_description="""Google calendar python api wrapper for Google's Calendar Reporting API v3 using Googles API python client.""",
+    long_description_content_type="text/plain",
     author="Rakesh Gunduka",
     packages=["calapi"],
     package_data={},

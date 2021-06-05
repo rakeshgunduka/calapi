@@ -8,5 +8,4 @@ OAUTH_API_SCOPES = [
     'https://www.googleapis.com/auth/calendar',
     'https://www.googleapis.com/auth/calendar.readonly'
 ]
-# OAUTH_CREDENTIALS_PATH = './samplecredentials.json'
-OAUTH_CREDENTIALS_PATH = './__credentials.json'
+OAUTH_CREDENTIALS_PATH = './samplecredentials.json'
