@@ -217,7 +217,6 @@ The following libraries will be installed when you install the client library:
 * [google-auth-httplib2](https://github.com/googleapis/google-auth-library-python-httplib2) (This library provides an httplib2 transport for google-auth.)
 
 ## To-Dos
-- Response Object Manipulation. (This update will enable to you to generate response in Google Raw Response, Simplified Response, CSV, Panda Dataframe).
 - Test cases.
 
 ## Contribute
